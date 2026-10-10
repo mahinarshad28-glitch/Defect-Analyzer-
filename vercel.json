@@ -1,4 +1,1 @@
-{
-  "outputDirectory": "public",
-  "functions": { "api/inspect.js": { "maxDuration": 30 } }
-}
+{}

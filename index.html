@@ -1,0 +1,16 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>Defect Inspector</title>
+<link rel="stylesheet" href="style.css"></head><body><main>
+<h1>🔍 Defect Inspector</h1>
+<p class="m">Upload a photo of any object (cup, jug, bottle, pen, tool...). AI looks for damage; it also builds a 3D model with the defects marked.</p>
+<div class="card"><label id="drop">📷 Choose or drop a photo<input id="f" type="file" accept="image/*" hidden></label>
+<div id="stage" hidden><div id="ph"><img id="im" alt="your photo"><canvas id="ov"></canvas></div></div>
+<div><button id="run" class="p" hidden>Inspect this object</button> <span id="st" class="m"></span></div></div>
+<div id="res" hidden><div class="card"><span id="vd" class="badge"></span> <b id="ob"></b><p id="sm"></p><ol id="dl"></ol>
+<p class="m">AI visual judgement from one photo, not a measured result. Check anything important in person.</p></div>
+<div class="card" id="c3"><div id="gl"><div id="lab"></div></div><p><button id="fly">⚡ Fly to defect</button> <button id="auto" class="on">Auto-rotate</button></p>
+<p class="m">Approximate 3D: your photo is wrapped around round objects and shown on both faces of boxes and other shapes, with estimated thickness. Hidden sides are guesses. Drag to rotate.</p></div></div></main>
+
+<p class="m" style="max-width:900px;margin:0 auto;padding:0 18px 30px;font-size:13px">Your photo is sent to Google's Gemini API to be analysed.
+On the free tier Google may use it to improve its models, so please don't upload private or customer photos.</p>
+<script src="three.min.js"></script><script src="app.js"></script></body></html>

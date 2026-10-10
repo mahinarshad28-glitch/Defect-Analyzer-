@@ -1,6 +1,8 @@
 // POST /api/inspect  { image: <base64 jpeg>, mime: "image/jpeg" }  ->  { object, condition, defects[], shape, ... }
 // The API key lives only in Vercel's environment variables, never in the browser.
 
+export const config = { maxDuration: 30 };       // longest this function may run (seconds)
+
 const MODEL = process.env.GEMINI_MODEL || 'gemini-flash-latest';
 const MAX_B64 = 3_500_000;                       // ~2.6 MB of image; Vercel's request limit is 4.5 MB
 const hits = new Map();                          // tiny per-instance rate limit (the real brake is Gemini's own quota)
@@ -79,12 +81,22 @@ export default async function handler(req, res) {
     return res.status(502).json({ error: 'ai_error' });
   }
   if (r.status === 429) return res.status(429).json({ error: 'rate_limited' });
-  if (!r.ok) return res.status(502).json({ error: 'ai_error', status: r.status });
+  if (!r.ok) {
+    let msg = '';
+    try { msg = (await r.json())?.error?.message || ''; } catch { /* no body */ }
+    msg = String(msg).split(key).join('***').slice(0, 160);          // never echo the key
+    console.error('Gemini error', r.status, MODEL, msg);
+    return res.status(502).json({ error: 'ai_error', status: r.status, detail: msg });
+  }
 
   const j = await r.json().catch(() => null);
   const text = (j?.candidates?.[0]?.content?.parts || []).map((p) => p.text || '').join('');
   let parsed = null;
   try { parsed = parseModelText(text); } catch { /* handled below */ }
-  if (!parsed || typeof parsed !== 'object') return res.status(502).json({ error: 'ai_error' });
+  if (!parsed || typeof parsed !== 'object') {
+    const why = j?.promptFeedback?.blockReason || j?.candidates?.[0]?.finishReason || (text ? 'answer was not valid JSON' : 'empty answer');
+    console.error('Gemini unusable answer', MODEL, why);
+    return res.status(502).json({ error: 'ai_error', status: 200, detail: 'no usable answer (' + why + ')' });
+  }
   return res.status(200).json(clean(parsed));
 }

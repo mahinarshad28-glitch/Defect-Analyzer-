@@ -10,7 +10,7 @@ try{const b64=await new Promise(r=>{const fr=new FileReader();fr.onload=()=>r(fr
 const r=await fetch('/api/inspect',{method:'POST',headers:{'Content-Type':'application/json','x-access-code':code},body:JSON.stringify({image:b64,mime:'image/jpeg'})});
 const j=await r.json().catch(()=>({}));
 if(r.status==401){code=prompt('This site needs an access code:')||'';sessionStorage.setItem('code',code);throw{msg:code?'Code saved. Press Inspect again.':'Access code required.'}}
-if(!r.ok)throw{msg:({rate_limited:'The free AI quota is used up for now. Try again in a minute (or tomorrow).',server_not_configured:'The site owner has not set the API key yet.',too_large:'That photo is too large.',ai_error:'The AI service had a problem. Try again.'})[j.error]||'Could not inspect (error '+r.status+').'};
+if(!r.ok)throw{msg:({rate_limited:'The free AI quota is used up for now. Try again in a minute (or tomorrow).',server_not_configured:'The site owner has not set the API key yet.',too_large:'That photo is too large.',ai_error:'The AI service had a problem'+(j.status?' (Google code '+j.status+')':'')+(j.detail?': '+j.detail:'')+'.'})[j.error]||'Could not inspect (error '+r.status+').'};
 show(j);$('#st').textContent=''}
 catch(e){$('#st').textContent=e.msg||('Network problem: '+e.message)}$('#run').disabled=false};
 function show(d){const df=(d.defects||[]).filter(x=>x.box&&x.box.length==4),mx=Math.max(0,...df.map(x=>+x.severity||1));
